@@ -55,7 +55,7 @@ def get_tier_evaluation(hero, acc):
         return "다이아~마스터", "✨ 훌륭한 피지컬! 상위권의 에임입니다."
     elif acc >= 40:
         return "골드~플레티넘", "👍 안정적인 1인분 국밥 픽!"
-    else:35
+    else:
         return "데이터 확인 중", "영점 조절이 조금 필요합니다."
 
 tier_result, feedback = get_tier_evaluation(selected_hero, best_acc)
