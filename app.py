@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 # 💻 1. 웹페이지 기본 세팅
 st.set_page_config(page_title="최선웅 전적 분석기", page_icon="🎮", layout="wide")
 
-st.title('✨ 다이아 1 최선웅의 전적 플랫폼 ✨')
+st.title('✨ 최선웅의 전적 플랫폼 ✨')
 st.write('내가 직접 만든 오버워치 데이터 분석 대시보드 v7.6 (가로 텍스트 & 커스텀 툴팁)')
 st.divider()
 
