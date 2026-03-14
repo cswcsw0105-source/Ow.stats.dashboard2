@@ -115,4 +115,9 @@ if current_acc_scoped:
 fig.update_layout(
     title=f"{selected_hero} 시즌별 핵심 스탯 변화",
     yaxis=dict(title="목숨당 처치 (KDA)", side='left', showgrid=False),
-    yaxis2=dict(title="명중률 (%)", side='right',
+    yaxis2=dict(title="명중률 (%)", side='right', overlaying='y', showgrid=False),
+    legend=dict(x=0.01, y=1.1, orientation="h"),
+    hovermode="x unified"
+)
+
+st.plotly_chart(fig, use_container_width=True)
