@@ -5,29 +5,28 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="최선웅 전적 분석기", page_icon="🎮", layout="wide")
 
 st.title('✨ 다이아 1 최선웅의 전적 플랫폼 ✨')
-st.write('내가 직접 만든 오버워치 데이터 분석 대시보드 v3.0 (디테일 스탯 & 유동적 시즌)')
+st.write('내가 직접 만든 오버워치 데이터 분석 대시보드 v3.1 (성장 지표 추가)')
 st.divider()
 
 # 💻 2. 완벽하게 커스텀된 영웅별 데이터 세팅
-# 👇 네 진짜 스샷 숫자를 빈칸에 채워넣어줘! (애쉬는 데이터가 3개뿐인 거 반영했어!)
 data = {
     "캐서디": {
         "seasons": ['15시즌', '16시즌', '17시즌', '18시즌', '19시즌', '20시즌'],
-        "kda": [2.86,3.82,2.40,2.04,2.55,2.06], 
-        "acc_hip": [53,53,51,53,53,51], # 일반 명중률
-        "acc_scoped": [] # 캐서디는 조준 명중률이 없으니 비워둠!
+        "kda": [2.86, 3.82, 2.40, 2.04, 2.55, 2.06], 
+        "acc_hip": [53, 53, 51, 53, 53, 51], 
+        "acc_scoped": [] 
     },
     "아나": {
         "seasons": ['15시즌', '16시즌', '17시즌', '18시즌', '19시즌', '20시즌'],
-        "kda": [2.27,1.87,0.91,1.33,1.70,1.09], # 👈 아나 KDA
-        "acc_hip": [60,64,60,60,62,62], # 👈 아나 일반 명중률
-        "acc_scoped": [63,62,63,65,64,64] # 👈 아나 조준 명중률
+        "kda": [2.27, 1.87, 0.91, 1.33, 1.70, 1.09], 
+        "acc_hip": [60, 64, 60, 60, 62, 62], 
+        "acc_scoped": [63, 62, 63, 65, 64, 64] 
     },
     "애쉬": {
-        "seasons": ['18시즌', '19시즌', '20시즌'], # 애쉬는 18시즌부터!
-        "kda": [3.00,2.76,2.16], # 👈 애쉬 KDA (3개만)
-        "acc_hip": [51,50,47], # 👈 애쉬 일반 명중률 (3개만)
-        "acc_scoped": [48,49,46] # 👈 애쉬 조준 명중률 (3개만)
+        "seasons": ['18시즌', '19시즌', '20시즌'], 
+        "kda": [3.00, 2.76, 2.16], 
+        "acc_hip": [51, 50, 47], 
+        "acc_scoped": [48, 49, 46] 
     }
 }
 
@@ -41,18 +40,10 @@ current_kda = data[selected_hero]["kda"]
 current_acc_hip = data[selected_hero]["acc_hip"]
 current_acc_scoped = data[selected_hero]["acc_scoped"]
 
-# 티어 판독을 위한 최고 명중률 계산 (조준 명중률이 있으면 그걸 우선으로 평가!)
-if current_acc_scoped:
-    best_acc = max(current_acc_scoped)
-else:
-    best_acc = max(current_acc_hip)
-
 # 💻 4. 핵심 지표 계산 (최근 시즌 vs 직전 시즌 비교)
-# 현재 선택된 영웅의 가장 최근 시즌 데이터
 latest_kda = current_kda[-1]
 latest_acc_hip = current_acc_hip[-1]
 
-# 직전 시즌 대비 증감률(Delta) 계산
 if len(current_kda) > 1:
     kda_delta = round(latest_kda - current_kda[-2], 2)
     acc_hip_delta = round(latest_acc_hip - current_acc_hip[-2], 2)
@@ -60,7 +51,6 @@ else:
     kda_delta = None
     acc_hip_delta = None
 
-# 조준 명중률이 있는 영웅(아나, 애쉬) 추가 계산
 if current_acc_scoped:
     latest_acc_scoped = current_acc_scoped[-1]
     if len(current_acc_scoped) > 1:
@@ -71,7 +61,6 @@ if current_acc_scoped:
 # 💻 5. 화면 요약 지표 띄우기 (티어표 삭제 & 증감률 반영)
 st.subheader(f"🎯 [{selected_hero}] 최근 시즌 스탯 및 성장률")
 
-# 조준 명중률 유무에 따라 열(column) 개수를 2개 또는 3개로 자동 조절
 if current_acc_scoped:
     col1, col2, col3 = st.columns(3)
     col1.metric(label=f"KDA ({current_seasons[-1]})", value=f"{latest_kda}", delta=f"{kda_delta} (직전 시즌 대비)")
@@ -84,57 +73,17 @@ else:
 
 st.divider()
 
-# 💻 6. 스마트 반응형 차트 (기존과 동일)
+# 💻 6. 스마트 반응형 차트 그리기
 fig = go.Figure()
 
-# KDA 막대 그래프
 fig.add_trace(go.Bar(
     x=current_seasons, y=current_kda, name="KDA", marker_color='#4A90E2', yaxis='y1'
 ))
-# 일반 명중률 선 그래프
 fig.add_trace(go.Scatter(
     x=current_seasons, y=current_acc_hip, name="일반 명중률(%)", mode='lines+markers', 
     marker=dict(color='#FF5A5F', size=8), line=dict(width=3), yaxis='y2'
 ))
-# 조준 명중률 선 그래프 (데이터가 있을 때만 노란색 점선으로 추가)
-if current_acc_scoped:
-    fig.add_trace(go.Scatter(
-        x=current_seasons, y=current_acc_scoped, name="조준 명중률(%)", mode='lines+markers', 
-        marker=dict(color='#F5A623', size=8, symbol='diamond'), line=dict(width=3, dash='dot'), yaxis='y2'
-    ))
 
-fig.update_layout(
-    title=f"{selected_hero} 시즌별 핵심 스탯 변화",
-    yaxis=dict(title="목숨당 처치 (KDA)", side='left', showgrid=False),
-    yaxis2=dict(title="명중률 (%)", side='right', overlaying='y', showgrid=False),
-    legend=dict(x=0.01, y=1.1, orientation="h"),
-    hovermode="x unified"
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-# 💻 5. 화면 요약 지표 띄우기
-st.subheader(f"🎯 [{selected_hero}] 전적 요약 및 티어 분석")
-col1, col2, col3 = st.columns(3)
-col1.metric(label="최고 KDA", value=f"{max(current_kda)}")
-if current_acc_scoped:
-    col2.metric(label="최고 조준 명중률", value=f"{max(current_acc_scoped)}%")
-else:
-    col2.metric(label="최고 명중률", value=f"{max(current_acc_hip)}%")
-
-# 💻 6. 스마트 반응형 차트 (조준 명중률 유무에 따라 선 개수 자동 조절)
-fig = go.Figure()
-
-# KDA 막대 그래프
-fig.add_trace(go.Bar(
-    x=current_seasons, y=current_kda, name="KDA", marker_color='#4A90E2', yaxis='y1'
-))
-# 일반 명중률 선 그래프
-fig.add_trace(go.Scatter(
-    x=current_seasons, y=current_acc_hip, name="일반 명중률(%)", mode='lines+markers', 
-    marker=dict(color='#FF5A5F', size=8), line=dict(width=3), yaxis='y2'
-))
-# 조준 명중률 선 그래프 (데이터가 있을 때만 노란색 점선으로 추가!)
 if current_acc_scoped:
     fig.add_trace(go.Scatter(
         x=current_seasons, y=current_acc_scoped, name="조준 명중률(%)", mode='lines+markers', 
