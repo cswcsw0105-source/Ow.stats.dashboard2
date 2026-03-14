@@ -121,3 +121,58 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
+# 💻 7. 전체 시즌 데이터 한눈에 보기 (표)
+st.divider()
+st.subheader(f"📊 [{selected_hero}] 전체 시즌 상세 기록")
+
+# 표에 들어갈 데이터 정리하기
+table_data = {
+    "시즌": current_seasons,
+    "KDA": current_kda,
+    "일반 명중률(%)": current_acc_hip,
+    "플레이 타임": current_playtime,
+    "총 판수": current_matches,
+    "승리": current_wins,
+    "패배": [m - w for m, w in zip(current_matches, current_wins)],
+    "승률(%)": [int((w / m) * 100) if m > 0 else 0 for m, w in zip(current_matches, current_wins)]
+}
+
+# 조준 명중률이 있으면 표에도 자동으로 추가
+if current_acc_scoped:
+    table_data["조준 명중률(%)"] = current_acc_scoped
+
+# 화면에 깔끔한 표로 띄우기
+st.dataframe(table_data, use_container_width=True)
+
+
+# 💻 8. 원하는 시즌 직접 1:1 비교하기
+st.divider()
+st.subheader("⚔️ 특정 시즌 맞대결 비교")
+
+# 두 개의 칸을 만들어서 시즌 선택하게 하기
+col_a, col_b = st.columns(2)
+with col_a:
+    season_a = st.selectbox("비교할 첫 번째 시즌 (과거)", current_seasons, index=0)
+with col_b:
+    season_b = st.selectbox("비교할 두 번째 시즌 (최근)", current_seasons, index=len(current_seasons)-1)
+
+# 선택한 시즌이 몇 번째 데이터인지 순서(인덱스) 찾기
+idx_a = current_seasons.index(season_a)
+idx_b = current_seasons.index(season_b)
+
+# A시즌 대비 B시즌의 증감률 계산하기
+diff_kda = round(current_kda[idx_b] - current_kda[idx_a], 2)
+diff_acc = current_acc_hip[idx_b] - current_acc_hip[idx_a]
+win_rate_a = int((current_wins[idx_a] / current_matches[idx_a]) * 100) if current_matches[idx_a] > 0 else 0
+win_rate_b = int((current_wins[idx_b] / current_matches[idx_b]) * 100) if current_matches[idx_b] > 0 else 0
+diff_win_rate = win_rate_b - win_rate_a
+
+# 결과 화면에 띄우기
+st.markdown(f"#### 🆚 {season_a} 대비 {season_b} 성적표")
+comp_col1, comp_col2, comp_col3, comp_col4 = st.columns(4)
+
+comp_col1.metric("선택된 시즌", f"{season_b}")
+comp_col2.metric("KDA 변화", f"{current_kda[idx_b]}", f"{diff_kda}")
+comp_col3.metric("명중률 변화", f"{current_acc_hip[idx_b]}%", f"{diff_acc}%")
+comp_col4.metric("승률 변화", f"{win_rate_b}%", f"{diff_win_rate}%")
