@@ -95,4 +95,51 @@ st.subheader("🎯 개별 영웅 스탯 변화")
 selected_hero = st.radio("분석할 영웅을 선택하세요", ["캐서디", "아나", "애쉬"], horizontal=True, label_visibility="collapsed")
 
 current_seasons = data[selected_hero]["seasons"]
-current_kda = data[selected
+current_kda = data[selected_hero]["kda"]
+current_acc_hip = data[selected_hero]["acc_hip"]
+current_acc_scoped = data[selected_hero]["acc_scoped"]
+
+fig = go.Figure()
+fig.add_trace(go.Bar(x=current_seasons, y=current_kda, name="KDA", marker_color='#4A90E2', yaxis='y1'))
+fig.add_trace(go.Scatter(x=current_seasons, y=current_acc_hip, name="일반 명중률(%)", mode='lines+markers', marker=dict(color='#FF5A5F', size=8), line=dict(width=3), yaxis='y2'))
+if current_acc_scoped:
+    fig.add_trace(go.Scatter(x=current_seasons, y=current_acc_scoped, name="조준 명중률(%)", mode='lines+markers', marker=dict(color='#F5A623', size=8, symbol='diamond'), line=dict(width=3, dash='dot'), yaxis='y2'))
+
+fig.update_layout(title=f"{selected_hero} 시즌별 스탯 변화", yaxis=dict(title="목숨당 처치 (KDA)", side='left', showgrid=False), yaxis2=dict(title="명중률 (%)", side='right', overlaying='y', showgrid=False), hovermode="x unified")
+st.plotly_chart(fig, use_container_width=True)
+
+# 💻 5. 영웅 & 시즌 크로스 맞대결 + 생태계 팩트체크 결합
+st.divider()
+st.subheader("⚔️ 무제한 크로스 맞대결 & 생태계 분석")
+
+col_a, col_b = st.columns(2)
+with col_a:
+    comp_hero_a = st.selectbox("비교할 첫 번째 영웅", ["캐서디", "아나", "애쉬"], key="hero_a")
+    comp_season_a = st.selectbox("첫 번째 영웅의 시즌", data[comp_hero_a]["seasons"], key="season_a")
+with col_b:
+    comp_hero_b = st.selectbox("비교할 두 번째 영웅", ["캐서디", "아나", "애쉬"], index=2, key="hero_b")
+    comp_season_b = st.selectbox("두 번째 영웅의 시즌", data[comp_hero_b]["seasons"], index=1, key="season_b")
+
+idx_a = data[comp_hero_a]["seasons"].index(comp_season_a)
+idx_b = data[comp_hero_b]["seasons"].index(comp_season_b)
+
+kda_a = data[comp_hero_a]["kda"][idx_a]
+kda_b = data[comp_hero_b]["kda"][idx_b]
+diff_kda = round(kda_b - kda_a, 2)
+
+win_a = int((data[comp_hero_a]["wins"][idx_a] / data[comp_hero_a]["matches"][idx_a]) * 100) if data[comp_hero_a]["matches"][idx_a] > 0 else 0
+win_b = int((data[comp_hero_b]["wins"][idx_b] / data[comp_hero_b]["matches"][idx_b]) * 100) if data[comp_hero_b]["matches"][idx_b] > 0 else 0
+diff_win = win_b - win_a
+
+st.markdown(f"#### 📊 [{comp_hero_a}] {comp_season_a}  vs  [{comp_hero_b}] {comp_season_b} 스탯 비교")
+comp_col1, comp_col2, comp_col3 = st.columns(3)
+comp_col1.metric(f"비교 대상", f"{comp_hero_b} ({comp_season_b})")
+comp_col2.metric("KDA 차이", f"{kda_b}", f"{diff_kda} (A 대비)")
+comp_col3.metric("승률 차이", f"{win_b}%", f"{diff_win}% (A 대비)")
+
+st.markdown("#### 💡 선택된 두 시즌의 생태계 비교 (팩트체크)")
+comment_col1, comment_col2 = st.columns(2)
+with comment_col1:
+    st.info(f"**[{comp_hero_a} - {comp_season_a}]**\n\n" + patch_and_meta_data.get(comp_hero_a, {}).get(comp_season_a, "데이터 준비 중..."))
+with comment_col2:
+    st.success(f"**[{comp_hero_b} - {comp_season_b}]**\n\n" + patch_and_meta_data.get(comp_hero_b, {}).get(comp_season_b, "데이터 준비 중..."))
