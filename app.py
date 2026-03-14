@@ -5,10 +5,10 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="최선웅 전적 분석기", page_icon="🎮", layout="wide")
 
 st.title('✨ 다이아 1 최선웅의 전적 플랫폼 ✨')
-st.write('내가 직접 만든 오버워치 데이터 분석 대시보드 v6.0 (UX 개편 및 픽률 변화 반영)')
+st.write('내가 직접 만든 오버워치 데이터 분석 대시보드 v7.0 (맞대결 & 메타 코멘트 결합)')
 st.divider()
 
-# 💻 2. 통합 데이터 세팅
+# 💻 2. 통합 데이터 및 팩트체크 데이터베이스 세팅
 data = {
     "캐서디": {
         "seasons": ['15시즌', '16시즌', '17시즌', '18시즌', '19시즌', '20시즌'],
@@ -39,6 +39,30 @@ data = {
     }
 }
 
+patch_and_meta_data = {
+    "캐서디": {
+        "15시즌": "🆕 **[패치/메타]** 오버워치 2 '특전' 시스템 최초 도입. 무난한 출발.\n\n💡 **[분석]** KDA 2.86. 새로운 시스템에 적응하며 준수한 성적을 기록한 시즌입니다.",
+        "16시즌": "✅ **[자체 버프]** 기본 발사 데미지 감소 시작 거리가 20m → 25m로 대폭 상향.\n\n🔥 **[분석]** KDA 3.82 폭발! 거리 버프가 에임과 완벽한 시너지를 냈습니다. 메타가 받쳐줄 때 피지컬이 얼마나 압도적인지 증명한 전성기입니다.",
+        "17시즌": "🔻 **[카운터 버프/메타]** 트레이서, 겐지 등 암살자 픽들의 강세 (다이브 메타 시작).\n\n💡 **[분석]** KDA 2.40. 생존의 압박이 심해지기 시작한 시점입니다.",
+        "18시즌": "➖ **[변화 없음]** 유의미한 패치 없음. 메타 고착화.\n\n💡 **[분석]** KDA 2.04. 패치 영향이 없었으므로 팀운 이슈나 컨디션 저하가 지표로 나타난 결과입니다.",
+        "19시즌": "🔻 **[카운터 버프/메타]** 하드 다이브 조합 득세. 뚜벅이 딜러들의 지옥 메타.\n\n🔥 **[분석]** 7시간이나 버티며 명중률 53%를 방어했습니다! KDA 2.55는 실력 탓이 아닌 집중 포커싱의 결과입니다.",
+        "20시즌": "➖ **[변화 없음]** 메타의 큰 변동 없음.\n\n💡 **[분석]** 표본이 적어 이전 기조가 유지되었습니다."
+    },
+    "아나": {
+        "15시즌": "🔥 **[초대형 버프]** 헤드샷(치명타) 판정인 '인간사냥꾼' 특전 추가!\n\n💡 **[분석]** KDA 2.27, 승률 62%. 딜러형 힐러로서의 포텐셜을 터뜨린 시작입니다.",
+        "16시즌": "➖ **[변화 없음]** 메타 변동 없음.\n\n💡 **[분석]** 명중률은 올랐으나 KDA 하락. 빡센 팀운이 예상됩니다.",
+        "17시즌": "🔻 **[카운터 버프]** 솜브라, 트레이서 대거 등장.\n\n💡 **[분석]** KDA 0.91. 카운터들의 억까가 절정에 달해 가장 가혹했던 시즌입니다.",
+        "18시즌": "➖ **[변화 없음]** 생태계 변동 없음.\n\n💡 **[분석]** KDA 1.33 회복. 폼이 다시 올라오고 있었다는 증거입니다.",
+        "19시즌": "🔥 **[핵심 패치]** 인간사냥꾼 특전 데미지 배율 1.5배 → 2배 상향!\n\n💡 **[분석]** 5시간 동안 14승을 쓸어 담으며 억까 메타 속에서도 딜러급 킬 포텐셜을 터뜨렸습니다.",
+        "20시즌": "➖ **[변화 없음]** 메타 유지.\n\n💡 **[분석]** KDA 1.09 하락. 팀 밸런스 이슈가 영향을 미쳤을 확률이 높습니다."
+    },
+    "애쉬": {
+        "18시즌": "➖ **[변화 없음]** 특별한 메타 변동 없음.\n\n💡 **[분석]** KDA 3.00. 패치 영향 없이 순수 피지컬로 히트스캔 폼이 매우 좋았음을 증명했습니다.",
+        "19시즌": "✅ **[핵심 패치]** 줌샷 데미지 감소 거리가 10m 늘어난 초대형 상향!\n\n🔥 **[분석]** 9시간 27승을 쓸어 담은 KDA 2.76! 사거리 버프를 체화해 하드 캐리 한 '인생 시즌'입니다.",
+        "20시즌": "🔻 **[카운터 강세]** 다이브(윈스턴 등) 압박이 거세짐.\n\n💡 **[분석]** KDA 2.16 하락. 에임은 좋았으나 억울한 데스가 누적된 시즌입니다."
+    }
+}
+
 # 💻 3. 선웅's 메타 변화 시각화 (영웅 픽률 비중)
 st.subheader("🔄 시즌별 선웅's 모스트 픽 변화 (플레이 판수 기준)")
 
@@ -52,19 +76,13 @@ fig_pickrate.add_trace(go.Bar(x=all_seasons, y=cassidy_matches, name="캐서디"
 fig_pickrate.add_trace(go.Bar(x=all_seasons, y=ashe_matches, name="애쉬", marker_color='#696969'))
 fig_pickrate.add_trace(go.Bar(x=all_seasons, y=ana_matches, name="아나", marker_color='#4682B4'))
 
-fig_pickrate.update_layout(
-    barmode='stack', 
-    title="시즌별 영웅 판수 비중 (풍선 효과 확인용)",
-    yaxis=dict(title="총 플레이 판수"),
-    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-)
+fig_pickrate.update_layout(barmode='stack', title="시즌별 영웅 판수 비중", yaxis=dict(title="총 플레이 판수"), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
 st.plotly_chart(fig_pickrate, use_container_width=True)
-st.info("💡 **데이터 인사이트:** 19시즌을 기점으로 애쉬의 판수(46판)가 폭발적으로 증가하며, 특정 영웅에 치중되기보다 상황에 맞춰 메인 딜러 픽을 유연하게 분산시킨 흐름이 명확히 보입니다.")
 
 st.divider()
 
-# 💻 4. UX 개선: 버튼식(라디오)으로 영웅 슉슉 넘기기
-st.subheader("🎯 개별 영웅 스탯 & 생태계 분석")
+# 💻 4. 개별 영웅 스탯 분석
+st.subheader("🎯 개별 영웅 스탯 변화")
 selected_hero = st.radio("분석할 영웅을 선택하세요", ["캐서디", "아나", "애쉬"], horizontal=True, label_visibility="collapsed")
 
 current_seasons = data[selected_hero]["seasons"]
@@ -72,25 +90,18 @@ current_kda = data[selected_hero]["kda"]
 current_acc_hip = data[selected_hero]["acc_hip"]
 current_acc_scoped = data[selected_hero]["acc_scoped"]
 
-# 스마트 반응형 차트
 fig = go.Figure()
 fig.add_trace(go.Bar(x=current_seasons, y=current_kda, name="KDA", marker_color='#4A90E2', yaxis='y1'))
 fig.add_trace(go.Scatter(x=current_seasons, y=current_acc_hip, name="일반 명중률(%)", mode='lines+markers', marker=dict(color='#FF5A5F', size=8), line=dict(width=3), yaxis='y2'))
-
 if current_acc_scoped:
     fig.add_trace(go.Scatter(x=current_seasons, y=current_acc_scoped, name="조준 명중률(%)", mode='lines+markers', marker=dict(color='#F5A623', size=8, symbol='diamond'), line=dict(width=3, dash='dot'), yaxis='y2'))
 
-fig.update_layout(
-    title=f"{selected_hero} 시즌별 스탯 변화",
-    yaxis=dict(title="목숨당 처치 (KDA)", side='left', showgrid=False),
-    yaxis2=dict(title="명중률 (%)", side='right', overlaying='y', showgrid=False),
-    hovermode="x unified"
-)
+fig.update_layout(title=f"{selected_hero} 시즌별 스탯 변화", yaxis=dict(title="목숨당 처치 (KDA)", side='left', showgrid=False), yaxis2=dict(title="명중률 (%)", side='right', overlaying='y', showgrid=False), hovermode="x unified")
 st.plotly_chart(fig, use_container_width=True)
 
-# 💻 5. 영웅 & 시즌 크로스 맞대결 (자유 비교)
+# 💻 5. 영웅 & 시즌 크로스 맞대결 + 생태계 팩트체크 결합
 st.divider()
-st.subheader("⚔️ 무제한 크로스 맞대결 (영웅 & 시즌)")
+st.subheader("⚔️ 무제한 크로스 맞대결 & 생태계 분석")
 
 col_a, col_b = st.columns(2)
 with col_a:
@@ -111,8 +122,15 @@ win_a = int((data[comp_hero_a]["wins"][idx_a] / data[comp_hero_a]["matches"][idx
 win_b = int((data[comp_hero_b]["wins"][idx_b] / data[comp_hero_b]["matches"][idx_b]) * 100) if data[comp_hero_b]["matches"][idx_b] > 0 else 0
 diff_win = win_b - win_a
 
-st.markdown(f"#### 🆚 [{comp_hero_a}] {comp_season_a}  vs  [{comp_hero_b}] {comp_season_b}")
+st.markdown(f"#### 📊 [{comp_hero_a}] {comp_season_a}  vs  [{comp_hero_b}] {comp_season_b} 스탯 비교")
 comp_col1, comp_col2, comp_col3 = st.columns(3)
 comp_col1.metric(f"비교 대상", f"{comp_hero_b} ({comp_season_b})")
 comp_col2.metric("KDA 차이", f"{kda_b}", f"{diff_kda} (A 대비)")
 comp_col3.metric("승률 차이", f"{win_b}%", f"{diff_win}% (A 대비)")
+
+st.markdown("#### 💡 선택된 두 시즌의 생태계 비교 (팩트체크)")
+comment_col1, comment_col2 = st.columns(2)
+with comment_col1:
+    st.info(f"**[{comp_hero_a} - {comp_season_a}]**\n\n" + patch_and_meta_data.get(comp_hero_a, {}).get(comp_season_a, "데이터 준비 중..."))
+with comment_col2:
+    st.success(f"**[{comp_hero_b} - {comp_season_b}]**\n\n" + patch_and_meta_data.get(comp_hero_b, {}).get(comp_season_b, "데이터 준비 중..."))
