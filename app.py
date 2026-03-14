@@ -47,18 +47,71 @@ if current_acc_scoped:
 else:
     best_acc = max(current_acc_hip)
 
-# 💻 4. 티어 판독기 로직
-def get_tier_evaluation(hero, acc):
-    if acc >= 50:
-        return "그랜드마스터~랭커", "🔥 폼 미쳤다! 윗동네 에임입니다."
-    elif acc >= 45:
-        return "다이아~마스터", "✨ 훌륭한 피지컬! 상위권의 에임입니다."
-    elif acc >= 40:
-        return "골드~플레티넘", "👍 안정적인 1인분 국밥 픽!"
-    else:
-        return "데이터 확인 중", "영점 조절이 조금 필요합니다."
+# 💻 4. 핵심 지표 계산 (최근 시즌 vs 직전 시즌 비교)
+# 현재 선택된 영웅의 가장 최근 시즌 데이터
+latest_kda = current_kda[-1]
+latest_acc_hip = current_acc_hip[-1]
 
-tier_result, feedback = get_tier_evaluation(selected_hero, best_acc)
+# 직전 시즌 대비 증감률(Delta) 계산
+if len(current_kda) > 1:
+    kda_delta = round(latest_kda - current_kda[-2], 2)
+    acc_hip_delta = round(latest_acc_hip - current_acc_hip[-2], 2)
+else:
+    kda_delta = None
+    acc_hip_delta = None
+
+# 조준 명중률이 있는 영웅(아나, 애쉬) 추가 계산
+if current_acc_scoped:
+    latest_acc_scoped = current_acc_scoped[-1]
+    if len(current_acc_scoped) > 1:
+        acc_scoped_delta = round(latest_acc_scoped - current_acc_scoped[-2], 2)
+    else:
+        acc_scoped_delta = None
+
+# 💻 5. 화면 요약 지표 띄우기 (티어표 삭제 & 증감률 반영)
+st.subheader(f"🎯 [{selected_hero}] 최근 시즌 스탯 및 성장률")
+
+# 조준 명중률 유무에 따라 열(column) 개수를 2개 또는 3개로 자동 조절
+if current_acc_scoped:
+    col1, col2, col3 = st.columns(3)
+    col1.metric(label=f"KDA ({current_seasons[-1]})", value=f"{latest_kda}", delta=f"{kda_delta} (직전 시즌 대비)")
+    col2.metric(label=f"일반 명중률 ({current_seasons[-1]})", value=f"{latest_acc_hip}%", delta=f"{acc_hip_delta}%")
+    col3.metric(label=f"조준 명중률 ({current_seasons[-1]})", value=f"{latest_acc_scoped}%", delta=f"{acc_scoped_delta}%")
+else:
+    col1, col2 = st.columns(2)
+    col1.metric(label=f"KDA ({current_seasons[-1]})", value=f"{latest_kda}", delta=f"{kda_delta} (직전 시즌 대비)")
+    col2.metric(label=f"명중률 ({current_seasons[-1]})", value=f"{latest_acc_hip}%", delta=f"{acc_hip_delta}%")
+
+st.divider()
+
+# 💻 6. 스마트 반응형 차트 (기존과 동일)
+fig = go.Figure()
+
+# KDA 막대 그래프
+fig.add_trace(go.Bar(
+    x=current_seasons, y=current_kda, name="KDA", marker_color='#4A90E2', yaxis='y1'
+))
+# 일반 명중률 선 그래프
+fig.add_trace(go.Scatter(
+    x=current_seasons, y=current_acc_hip, name="일반 명중률(%)", mode='lines+markers', 
+    marker=dict(color='#FF5A5F', size=8), line=dict(width=3), yaxis='y2'
+))
+# 조준 명중률 선 그래프 (데이터가 있을 때만 노란색 점선으로 추가)
+if current_acc_scoped:
+    fig.add_trace(go.Scatter(
+        x=current_seasons, y=current_acc_scoped, name="조준 명중률(%)", mode='lines+markers', 
+        marker=dict(color='#F5A623', size=8, symbol='diamond'), line=dict(width=3, dash='dot'), yaxis='y2'
+    ))
+
+fig.update_layout(
+    title=f"{selected_hero} 시즌별 핵심 스탯 변화",
+    yaxis=dict(title="목숨당 처치 (KDA)", side='left', showgrid=False),
+    yaxis2=dict(title="명중률 (%)", side='right', overlaying='y', showgrid=False),
+    legend=dict(x=0.01, y=1.1, orientation="h"),
+    hovermode="x unified"
+)
+
+st.plotly_chart(fig, use_container_width=True)
 
 # 💻 5. 화면 요약 지표 띄우기
 st.subheader(f"🎯 [{selected_hero}] 전적 요약 및 티어 분석")
