@@ -121,7 +121,7 @@ if current_acc_scoped:
     col2.metric(label="최고 조준 명중률", value=f"{max(current_acc_scoped)}%")
 else:
     col2.metric(label="최고 명중률", value=f"{max(current_acc_hip)}%")
-col3.metric(label="📊 추정 티어", value=f"{tier_result}", delta=feedback, delta_color="normal")
+value=f"{tier_result}", delta=feedback, delta_color="normal")
 st.divider()
 
 # 💻 6. 스마트 반응형 차트 (조준 명중률 유무에 따라 선 개수 자동 조절)
