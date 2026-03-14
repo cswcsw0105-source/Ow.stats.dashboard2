@@ -226,9 +226,3 @@ if selected_hero in patch_and_meta_data and analyze_season in patch_and_meta_dat
     st.info(patch_and_meta_data[selected_hero][analyze_season])
 else:
     st.warning("데이터를 분석 중입니다.")
-
-# 선택한 시즌의 코멘트가 데이터베이스에 있다면 출력, 없으면 기본 멘트 출력
-if selected_hero in patch_and_meta_data and analyze_season in patch_and_meta_data[selected_hero]:
-    st.info(patch_and_meta_data[selected_hero][analyze_season])
-else:
-    st.warning("이 시즌의 구체적인 패치 노트와 생태계 분석 데이터를 업데이트하는 중입니다. 곧 반영됩니다!")
